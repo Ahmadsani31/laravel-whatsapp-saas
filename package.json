@@ -1,0 +1,25 @@
+{
+    "name": "whatsapp-saas",
+    "version": "2.0.0",
+    "description": "نظام إدارة واتساب احترافي",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "start": "concurrently \"npm run engine\" \"npm run serve\"",
+        "engine": "cd whatsapp-engine && node index.js",
+        "serve": "php artisan serve",
+        "setup": "composer install && cd whatsapp-engine && npm install && cd .. && cp .env.example .env && php artisan key:generate",
+        "clean": "rm -rf whatsapp-engine/whatsapp-session && php artisan cache:clear"
+    },
+    "devDependencies": {
+        "axios": "^1.6.4",
+        "laravel-vite-plugin": "^1.0.0",
+        "vite": "^5.0.0",
+        "concurrently": "^8.2.2"
+    },
+    "keywords": ["whatsapp", "saas", "laravel", "livewire", "arabic"],
+    "author": "WhatsApp SaaS Team",
+    "license": "MIT"
+}
