@@ -1,13 +1,13 @@
 <div>
     <!-- Success/Error Messages -->
     @if($message)
-        <div class="mb-4 p-3 rounded-lg {{ $messageType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' }}">
+        <div class="mb-6 p-4 rounded-lg {{ $messageType === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800' }}">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <i class="fas {{ $messageType === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-triangle text-red-500' }} mr-2"></i>
-                    <span class="text-sm font-medium">{{ $message }}</span>
+                    <i class="fas {{ $messageType === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-triangle text-red-500' }} ml-2"></i>
+                    <span class="font-medium">{{ $message }}</span>
                 </div>
-                <button wire:click="clearMessage" class="text-gray-400 hover:text-gray-600">
+                <button wire:click="clearMessage" class="text-gray-400 hover:text-gray-600 p-1">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -149,14 +149,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Auto-clear messages after 3 seconds
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.on('message-shown', () => {
-            setTimeout(() => {
-                Livewire.dispatch('clearMessage');
-            }, 3000);
-        });
-    });
-</script>

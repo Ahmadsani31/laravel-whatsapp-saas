@@ -16,11 +16,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+
+    Route::get('/dashboard', App\Livewire\Dashboard::class)->name('dashboard');
+    Route::get('/api-keys', App\Livewire\ApiKeyManager::class)->name('api-keys');
     
-    Route::get('/api-keys', function () {
-        return view('api-keys');
-    })->name('api-keys');
 });

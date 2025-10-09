@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 
+#[Layout('layouts.app', ['title' => 'Message Reader'])]
 class MessageReader extends Component
 {
     public $conversations = [];
@@ -14,9 +16,11 @@ class MessageReader extends Component
     public $loading = false;
     public $message = '';
     public $messageType = '';
+    public $embedded = false;
 
-    public function mount()
+    public function mount($embedded = false)
     {
+        $this->embedded = $embedded;
         // Don't load conversations automatically to avoid errors on page load
         // User can click refresh to load them
     }
@@ -120,6 +124,10 @@ class MessageReader extends Component
 
     public function render()
     {
+        if ($this->embedded) {
+            return view('livewire.message-reader');
+        }
+        
         return view('livewire.message-reader');
     }
 }

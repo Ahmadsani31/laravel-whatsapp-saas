@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\ApiKey;
 use Illuminate\Support\Facades\Log;
 
+#[Layout('layouts.app', ['title' => 'API Keys Management'])]
 class ApiKeyManager extends Component
 {
     public $apiKeys = [];
