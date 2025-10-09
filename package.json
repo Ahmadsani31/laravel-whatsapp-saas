@@ -14,12 +14,21 @@
         "clean": "rm -rf whatsapp-engine/whatsapp-session && php artisan cache:clear"
     },
     "devDependencies": {
+        "autoprefixer": "^10.4.21",
         "axios": "^1.6.4",
+        "concurrently": "^8.2.2",
         "laravel-vite-plugin": "^1.0.0",
-        "vite": "^5.0.0",
-        "concurrently": "^8.2.2"
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.18",
+        "vite": "^5.0.0"
     },
-    "keywords": ["whatsapp", "saas", "laravel", "livewire", "arabic"],
+    "keywords": [
+        "whatsapp",
+        "saas",
+        "laravel",
+        "livewire",
+        "arabic"
+    ],
     "author": "WhatsApp SaaS Team",
     "license": "MIT"
 }

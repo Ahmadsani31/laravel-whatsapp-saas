@@ -1,6 +1,95 @@
+/* Import Dashboard Styles */
+@import './dashboard.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Import Dashboard Styles */
-@import './dashboard.css';
+/* Flowbite Dark Mode Support */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer components {
+  /* Navigation Active State */
+  .nav-active {
+    @apply text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900;
+  }
+  
+  /* Card Shadow */
+  .card-shadow {
+    @apply shadow-lg dark:shadow-2xl;
+  }
+  
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-slate-100 dark:bg-gray-700 rounded;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-gray-600 rounded hover:bg-slate-400 dark:hover:bg-gray-500;
+  }
+
+  /* Dark Mode Transitions */
+  html {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+  
+  body, header, main, div, button, input, textarea, select {
+    @apply transition-colors duration-200 ease-in-out;
+  }
+
+  /* Theme Toggle Button Animation */
+  #theme-toggle {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  #theme-toggle:hover {
+    @apply scale-110;
+  }
+
+  #theme-toggle:active {
+    @apply scale-95;
+  }
+
+  /* Form Elements Dark Mode */
+  input, textarea, select {
+    @apply dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    @apply dark:ring-blue-500 dark:border-blue-500;
+  }
+
+  /* Button Dark Mode */
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white;
+  }
+
+  /* Alert Dark Mode */
+  .alert-success {
+    @apply bg-green-50 border-green-200 text-green-800 dark:bg-green-900 dark:border-green-700 dark:text-green-200;
+  }
+
+  .alert-error {
+    @apply bg-red-50 border-red-200 text-red-800 dark:bg-red-900 dark:border-red-700 dark:text-red-200;
+  }
+
+  .alert-warning {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-200;
+  }
+
+  .alert-info {
+    @apply bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-200;
+  }
+}

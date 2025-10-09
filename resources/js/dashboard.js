@@ -1,3 +1,5 @@
+import { Config } from './config';
+
 // Dashboard JavaScript Functions
 class DashboardManager {
     constructor() {
@@ -5,8 +7,12 @@ class DashboardManager {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.startTime = Date.now();
-        this.whatsappEngineUrl = document.querySelector('meta[name="whatsapp-engine-url"]')?.content || 'http://localhost:3000';
+        this.whatsappEngineUrl = Config.getWhatsAppEngineUrl();
         
+        if (Config.isDebug()) {
+            console.log('🔗 WhatsApp Engine URL:', this.whatsappEngineUrl);
+            console.log('🎨 Theme Preference:', Config.getThemePreference());
+        }
         this.init();
     }
 
@@ -28,25 +34,33 @@ class DashboardManager {
         });
 
         this.socket.on('connect', () => {
-            console.log('✅ Connected to WhatsApp Engine');
+            if (Config.isDebug()) {
+                console.log('✅ Connected to WhatsApp Engine');
+            }
             this.reconnectAttempts = 0;
             this.updateConnectionIndicator('connected');
         });
 
         this.socket.on('disconnect', (reason) => {
-            console.log('❌ Disconnected from WhatsApp Engine:', reason);
+            if (Config.isDebug()) {
+                console.log('❌ Disconnected from WhatsApp Engine:', reason);
+            }
             this.updateConnectionIndicator('disconnected');
             this.handleReconnect();
         });
 
         this.socket.on('status', (status) => {
-            console.log('📊 Status update:', status);
+            if (Config.isDebug()) {
+                console.log('📊 Status update:', status);
+            }
             this.updateConnectionIndicator(status);
             Livewire.dispatch('statusUpdated', { status });
         });
 
         this.socket.on('qr', (qr) => {
-            console.log('📱 QR update:', qr ? 'Received' : 'Cleared');
+            if (Config.isDebug()) {
+                console.log('📱 QR update:', qr ? 'Received' : 'Cleared');
+            }
             Livewire.dispatch('qrUpdated', { qr });
         });
 
