@@ -215,7 +215,7 @@ npm install -g pm2
 
 ```bash
 # Upload files
-git clone https://github.com/your-username/whatsapp-saas.git
+git clone https://github.com/hachchadi/whatsapp-saas.git
 cd whatsapp-saas
 
 # Install dependencies
