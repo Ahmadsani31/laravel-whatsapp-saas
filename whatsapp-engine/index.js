@@ -10,6 +10,9 @@ const { Server } = require("socket.io");
 const qrcode = require("qrcode");
 const fs = require("fs");
 
+// Load environment variables
+require("dotenv").config();
+
 class WhatsAppEngine {
     constructor() {
         this.app = express();
@@ -33,6 +36,8 @@ class WhatsAppEngine {
         this.sessionPath = "./whatsapp-session";
         this.messages = new Map(); // Store recent messages
         this.conversations = new Map(); // Store conversations
+        this.webhookUrl =
+            process.env.WEBHOOK_URL || `${APP_URL}/webhook/whatsapp`;
 
         this.setupMiddleware();
         this.setupRoutes();
@@ -108,10 +113,22 @@ class WhatsAppEngine {
                         .json({ error: "Number not found on WhatsApp" });
                 }
 
-                await this.sock.sendMessage(result.jid, { text: message });
+                const sentMessage = await this.sock.sendMessage(result.jid, {
+                    text: message,
+                });
+
+                // Send webhook notification for sent message
+                this.sendWebhook("message_sent", {
+                    phone_number: number,
+                    message_id: sentMessage.key.id,
+                    message_content: message,
+                    timestamp: Date.now(),
+                });
+
                 res.json({
                     success: true,
                     message: "Message sent successfully",
+                    messageId: sentMessage.key.id,
                 });
             } catch (error) {
                 res.status(500).json({ error: "Failed to send message" });
@@ -361,7 +378,42 @@ class WhatsAppEngine {
                     // Emit to connected clients
                     this.io.emit("new-message", messageData);
 
+                    // Send webhook for incoming message (if not from me)
+                    if (!messageData.fromMe) {
+                        this.sendWebhook("message_received", {
+                            phone_number: from,
+                            message_id: message.key.id,
+                            message_content: messageText,
+                            timestamp: messageData.timestamp,
+                        });
+                    }
+
                     console.log(`📨 New message from ${from}: ${messageText}`);
+                }
+            });
+
+            // Listen for message status updates (read receipts, delivery)
+            this.sock.ev.on("messages.update", async (updates) => {
+                for (const update of updates) {
+                    if (update.update.status) {
+                        const status = update.update.status;
+                        const messageId = update.key.id;
+
+                        // Send webhook for status updates
+                        if (status === 3) {
+                            // Message delivered
+                            this.sendWebhook("message_delivered", {
+                                message_id: messageId,
+                                timestamp: Date.now(),
+                            });
+                        } else if (status === 4) {
+                            // Message read
+                            this.sendWebhook("message_read", {
+                                message_id: messageId,
+                                timestamp: Date.now(),
+                            });
+                        }
+                    }
                 }
             });
         } catch (error) {
@@ -385,6 +437,54 @@ class WhatsAppEngine {
         this.io.emit("qr", this.qrCode);
     }
 
+    async sendWebhook(eventType, data) {
+        try {
+            const axios = require("axios");
+
+            const webhookData = {
+                event_type: eventType,
+                timestamp: Date.now(),
+                data: data,
+            };
+
+            console.log(`📤 Sending webhook: ${eventType}`, data);
+
+            const response = await axios.post(this.webhookUrl, webhookData, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "User-Agent": "WhatsApp-Engine/1.0",
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                timeout: 10000,
+                validateStatus: function (status) {
+                    return status < 500; // Accept any status code less than 500
+                },
+            });
+
+            if (response.status >= 400) {
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            }
+
+            console.log(`✅ Webhook sent successfully: ${eventType}`);
+        } catch (error) {
+            console.error(
+                `❌ Failed to send webhook: ${eventType}`,
+                error.message
+            );
+
+            // Log more details for debugging
+            if (error.response) {
+                console.error(`Response status: ${error.response.status}`);
+                console.error(`Response data:`, error.response.data);
+            } else if (error.request) {
+                console.error("No response received from webhook URL");
+            }
+        }
+    }
+
     start() {
         const port = process.env.WHATSAPP_ENGINE_PORT || 3000;
         this.server.listen(port, () => {
@@ -394,6 +494,7 @@ class WhatsAppEngine {
                     process.env.APP_URL || "http://localhost:8000"
                 }`
             );
+            console.log(`🔗 Webhook URL: ${this.webhookUrl}`);
         });
     }
 }

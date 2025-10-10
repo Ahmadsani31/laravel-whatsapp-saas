@@ -26,7 +26,7 @@ class WhatsappManager extends Component
             $service = new WhatsAppService();
             $response = $service->checkNumber($this->number);
             
-            // التأكد من أن الاستجابة array
+            // Ensure response is array
             if (!is_array($response)) {
                 $response = ['error' => 'Invalid response from server'];
             }
@@ -55,7 +55,7 @@ class WhatsappManager extends Component
             $service = new WhatsAppService();
             $response = $service->sendMessage($this->number, $this->message);
             
-            // التأكد من أن الاستجابة array
+            // Ensure response is array
             if (!is_array($response)) {
                 $response = ['success' => false, 'error' => 'Invalid response from server'];
             }

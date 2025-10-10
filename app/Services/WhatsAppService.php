@@ -143,6 +143,42 @@ class WhatsAppService
         }
     }
 
+    public function getMessageStatus($messageId)
+    {
+        try {
+            $response = Http::timeout($this->timeout)->get($this->baseUrl . '/message-status/' . $messageId);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                return is_array($data) ? $data : ['success' => false, 'error' => 'Invalid response format'];
+            }
+            
+            return ['success' => false, 'error' => 'HTTP Error: ' . $response->status()];
+        } catch (\Exception $e) {
+            $this->logError('Get Message Status Error: ' . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to get message status: ' . $e->getMessage()];
+        }
+    }
+
+    public function sendBulkMessages($messages)
+    {
+        try {
+            $response = Http::timeout($this->timeout * 2)->post($this->baseUrl . '/send-bulk', [
+                'messages' => $messages
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                return is_array($data) ? $data : ['success' => false, 'error' => 'Invalid response format'];
+            }
+            
+            return ['success' => false, 'error' => 'HTTP Error: ' . $response->status()];
+        } catch (\Exception $e) {
+            $this->logError('Send Bulk Messages Error: ' . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to send bulk messages: ' . $e->getMessage()];
+        }
+    }
+
     private function formatNumber($number)
     {
         // Remove any non-numeric characters except +

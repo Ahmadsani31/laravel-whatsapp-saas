@@ -1,307 +1,271 @@
-# 🚀 WhatsApp SaaS - Professional WhatsApp Management System
+# WhatsApp Campaign Management System
 
-A modern SaaS system for WhatsApp automation using Laravel 11 + Livewire 3 with API Key authentication for AI agents and real-time updates.
+A comprehensive WhatsApp messaging platform built with Laravel and Node.js, featuring advanced campaign management, real-time message tracking, and automated reply handling.
 
-## ✨ Features
+## 🚀 Features
 
--   🔗 **Quick Connect**: Link WhatsApp via QR Code
--   📱 **Number Validation**: Check if numbers exist on WhatsApp
--   💬 **Message Sending**: Send instant and reliable messages
--   🤖 **AI Agent Ready**: API Key authentication for AI agents
--   🔑 **API Key Management**: Secure key generation and management
--   ⚡ **Real-time Updates**: Socket.IO for instant status updates
--   🔒 **High Security**: Advanced error handling and validation
--   🔄 **Auto-reconnect**: Automatic reconnection and status refresh
--   📚 **MCP Protocol**: Model Context Protocol for AI integration
+### Campaign Management
+- **Create & Edit Campaigns**: Full CRUD operations for marketing campaigns
+- **Bulk Messaging**: Send messages to multiple recipients simultaneously  
+- **Campaign Restart**: Restart completed campaigns with reset statistics
+- **Message Templates**: Support for both text and template messages
+- **Phone Number Management**: Add/remove recipients dynamically
 
-## 🛠️ Installation
+### Real-time Tracking
+- **Message Status**: Track sent, delivered, and read status
+- **Reply Tracking**: Automatic capture and linking of customer replies
+- **Live Statistics**: Real-time campaign analytics and metrics
+- **Webhook Integration**: Seamless integration with WhatsApp Business API
 
-### 1. Project Setup
+### Analytics & Reporting
+- **Campaign Statistics**: Delivery rates, read rates, and reply rates
+- **Reply Management**: View and manage customer responses
+- **Export Functionality**: Export campaign results to CSV
+- **Performance Metrics**: Comprehensive campaign performance tracking
 
+## 🛠 Tech Stack
+
+- **Backend**: Laravel 10+ (PHP 8.1+)
+- **Frontend**: Livewire, TailwindCSS, Alpine.js
+- **WhatsApp Engine**: Node.js with Baileys library
+- **Database**: MySQL/PostgreSQL
+- **Real-time**: WebSocket integration
+- **Queue System**: Laravel Queues for message processing
+
+## 📋 Requirements
+
+- PHP 8.1 or higher
+- Composer
+- Node.js 16+ and npm
+- MySQL/PostgreSQL database
+- WhatsApp Business account
+
+## ⚡ Quick Start
+
+### 1. Clone & Install
 ```bash
-# Clone the project
-git clone https://github.com/hachchadi/whatsapp-saas.git
-cd whatsapp-saas
-
-# Install PHP dependencies
+git clone <repository-url>
+cd laravel-whatsapp-saas
 composer install
-
-# Setup environment
-cp .env.example .env
-php artisan key:generate
-
-# Configure environment variables in .env:
-# APP_NAME="WhatsApp SaaS"
-# APP_URL=http://localhost:8000
-# WHATSAPP_ENGINE_URL=http://localhost:3000
+npm install
 ```
 
-### 2. WhatsApp Engine Setup
+### 2. Environment Setup
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
+### 3. Database Configuration
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=whatsapp_saas
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### 4. Run Migrations
+```bash
+php artisan migrate
+```
+
+### 5. Build Assets
+```bash
+npm run build
+```
+
+### 6. Start Services
+```bash
+# Terminal 1: Laravel Application
+php artisan serve
+
+# Terminal 2: WhatsApp Engine
+cd whatsapp-engine
+npm install
+npm start
+```
+
+## 🔧 WhatsApp Engine Setup
+
+### 1. Install Dependencies
 ```bash
 cd whatsapp-engine
 npm install
-cd ..
 ```
 
-## 🚀 Running the Application
-
-### Quick Start
-
+### 2. Configure Environment
 ```bash
-# Terminal 1: Start WhatsApp Engine
-cd whatsapp-engine
-node index.js
-
-# Terminal 2: Start Laravel
-php artisan serve
+# Create .env file in whatsapp-engine directory
+WHATSAPP_ENGINE_PORT=3000
+APP_URL=http://localhost:8000
+WEBHOOK_URL=http://localhost:8000/webhook/whatsapp
+NODE_ENV=development
 ```
 
-### Access the System
-
--   Open browser: `http://localhost:8000`
--   **Login with default credentials:**
-    -   Admin: `admin@whatsapp-saas.com` / `password123`
-    -   Demo: `demo@whatsapp-saas.com` / `demo123`
--   Scan QR code with your phone to connect
--   Start sending messages!
-
-## 🔐 Authentication & Security
-
-### Web Authentication
-
--   **Laravel Sanctum** for secure authentication
--   **Session-based** authentication for web interface
--   **Token-based** authentication for API access
--   **Protected routes** with middleware
-
-### Default Users
-
+### 3. Start Engine & Connect WhatsApp
 ```bash
-# Create default users
-php artisan db:seed --class=AdminUserSeeder
-
-# Default credentials:
-# Admin: admin@whatsapp-saas.com / password123
+npm start
+# Visit http://localhost:3000/status
+# Scan QR code with your WhatsApp
 ```
 
-### API Authentication
+## 📱 Usage Guide
 
+### Creating Campaigns
+1. Navigate to **Campaigns** section
+2. Click **"New Campaign"**
+3. Fill in campaign details:
+   - Campaign name and description
+   - Message content
+   - Phone numbers (one per line)
+4. Click **"Create Campaign"**
+
+### Managing Campaigns
+- **Start**: Begin sending messages
+- **Pause**: Temporarily stop campaign
+- **Edit**: Modify content or recipients (even completed campaigns)
+- **Restart**: Reset and resend completed campaigns
+- **View Details**: See detailed statistics and replies
+
+### Monitoring Replies
+- **Real-time Tracking**: Replies appear automatically
+- **Reply Management**: View all replies in dedicated section
+- **Export Data**: Download campaign results with replies
+
+## 🔌 API Endpoints
+
+### Campaign Management
 ```bash
-# Get API token
-curl -X POST {APP_URL}/api/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@whatsapp-saas.com","password":"password123"}'
+# Get campaign status
+GET /api/campaigns/{id}
+
+# Create campaign
+POST /api/campaigns
+
+# Update campaign
+PUT /api/campaigns/{id}
 ```
 
-## 🤖 AI Agent Integration
-
-### API Key Management
-
+### Message Operations
 ```bash
-# Generate API key for AI agents
-php artisan api-key:generate "My AI Agent" --permissions=whatsapp_send,whatsapp_check,whatsapp_status
-
-# Access API Keys management in web interface
-# Go to Dashboard → Click key icon (🔑) in header
-```
-
-### MCP (Model Context Protocol) Endpoints
-
-All endpoints require API Key authentication:
-
-#### Get Server Info
-
-```http
-GET /api/mcp/info
-X-API-Key: wapi_your_key_here
-```
-
-#### Send Message (AI Agents)
-
-```http
-POST /api/mcp/tools/call
-X-API-Key: wapi_your_key_here
-Content-Type: application/json
-
+# Send single message
+POST /api/messages
 {
-    "name": "whatsapp_send_message",
-    "arguments": {
-        "number": "+1234567890",
-        "message": "Hello from AI!"
-    }
+    "phone_number": "+1234567890",
+    "message": "Hello World!"
 }
+
+# Get message status
+GET /api/messages/{id}/status
 ```
 
-#### Check Number (AI Agents)
-
-```http
-POST /api/mcp/tools/call
-X-API-Key: wapi_your_key_here
-Content-Type: application/json
-
-{
-    "name": "whatsapp_check_number",
-    "arguments": {
-        "number": "+1234567890"
-    }
-}
-```
-
-### Usage Examples
-
-Check the `examples/` directory for:
-
--   **Python**: Complete client class
--   **Node.js**: Native implementation
--   **cURL**: Shell script examples
--   **AI Integration**: OpenAI, LangChain guides
-
-## 📡 Web API Endpoints (Admin)
-
-### Connection Status
-
-```http
-GET /api/whatsapp/status
-Authorization: Bearer {token}
-```
-
-### Send Message (Web)
-
-```http
-POST /api/whatsapp/send
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-    "number": "+1234567890",
-    "message": "Hello from WhatsApp SaaS!"
-}
-```
-
-## 🎨 Technical Features
-
-### Frontend
-
--   ✅ Responsive Design
--   ✅ Real-time Status Updates
--   ✅ Auto-reconnection
--   ✅ Socket.IO Integration
--   ✅ Error Handling
-
-### Backend
-
--   ✅ Laravel 10 + Livewire 3
--   ✅ Node.js + Socket.IO
--   ✅ Advanced Error Handling
--   ✅ Comprehensive Logging
--   ✅ High Security
--   ✅ Auto Status Refresh
-
-## 🔧 Production Deployment
-
-### 1. Server Setup
-
+### Webhook Endpoints
 ```bash
-# Install requirements
-sudo apt update
-sudo apt install nginx php8.1-fpm php8.1-mysql nodejs npm composer
+# WhatsApp webhook (auto-configured)
+POST /webhook/whatsapp
 
-# Setup PM2
-npm install -g pm2
+# Webhook verification
+GET /webhook/whatsapp
 ```
 
-### 2. Deploy Project
+## 🔄 Webhook Integration
 
+The system automatically handles WhatsApp webhooks for:
+- **Message Sent**: Confirms message delivery to WhatsApp
+- **Message Delivered**: Updates delivery status
+- **Message Read**: Tracks read receipts
+- **Incoming Messages**: Captures and links customer replies
+
+## 📊 Campaign Statistics
+
+### Available Metrics
+- **Total Recipients**: Number of target recipients
+- **Sent Count**: Successfully sent messages
+- **Delivered Count**: Messages delivered to devices
+- **Read Count**: Messages opened by recipients
+- **Reply Count**: Customer responses received
+- **Failed Count**: Failed message attempts
+
+### Calculated Rates
+- **Success Rate**: (Delivered / Sent) × 100
+- **Read Rate**: (Read / Delivered) × 100
+- **Reply Rate**: (Replies / Delivered) × 100
+
+## 🛡 Security Features
+
+- **CSRF Protection**: Webhook endpoints properly secured
+- **Input Validation**: All user inputs validated
+- **Rate Limiting**: API endpoints rate limited
+- **Authentication**: User authentication required
+- **Data Sanitization**: Phone numbers and content sanitized
+
+## 🧪 Testing
+
+### Run Laravel Tests
 ```bash
-# Upload files
-git clone https://github.com/hachchadi/whatsapp-saas.git
-cd whatsapp-saas
-
-# Install dependencies
-composer install --optimize-autoloader --no-dev
-cd whatsapp-engine && npm install && cd ..
-
-# Setup Laravel
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Run WhatsApp engine
-pm2 start whatsapp-engine/index.js --name whatsapp-engine
-pm2 startup
-pm2 save
+php artisan test
 ```
 
-### 3. Nginx Configuration
+### Manual Testing
+1. Create a test campaign
+2. Send messages via WhatsApp Engine
+3. Reply from your phone
+4. Verify statistics update in real-time
 
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    root /path/to/whatsapp-saas/public;
+## 🔧 Development
 
-    index index.php;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-}
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues and Solutions
-
-**1. QR Code not showing**
-
+### Code Style
 ```bash
-# Check WhatsApp engine
-cd whatsapp-engine
-node index.js
-
-# Check connection
-curl http://localhost:3000/status
+./vendor/bin/pint
 ```
 
-**2. Message sending fails**
-
--   Ensure WhatsApp is connected
--   Verify number format (+1234567890)
--   Check error logs
-
-**3. Connection issues**
-
+### Frontend Development
 ```bash
-# Restart services
-pm2 restart whatsapp-engine
-php artisan config:clear
+npm run dev
 ```
 
-## 📊 Monitoring and Stats
+### Database Seeding
+```bash
+php artisan db:seed
+```
 
--   📈 Real-time message statistics
--   📱 Connection status monitoring
--   🔍 Detailed error logging
--   ⚡ Performance optimization
+## 📁 Project Structure
+
+```
+├── app/
+│   ├── Http/Controllers/     # API & Webhook controllers
+│   ├── Livewire/            # Frontend components
+│   ├── Models/              # Database models
+│   └── Services/            # Business logic
+├── whatsapp-engine/         # Node.js WhatsApp integration
+├── resources/views/         # Blade templates
+├── database/migrations/     # Database schema
+└── routes/                  # Application routes
+```
 
 ## 🤝 Contributing
 
-We welcome contributions! Please:
-
-1. Fork the project
-2. Create a feature branch
-3. Add improvements
-4. Submit a Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
----
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Issues**: Report bugs via GitHub Issues
+- **Documentation**: Check the wiki for detailed guides
+- **Community**: Join our Discord server for support
+
+## 🙏 Acknowledgments
+
+- Built with [Laravel](https://laravel.com/)
+- WhatsApp integration via [Baileys](https://github.com/WhiskeySockets/Baileys)
+- UI components with [TailwindCSS](https://tailwindcss.com/)
+- Real-time features with [Livewire](https://laravel-livewire.com/)

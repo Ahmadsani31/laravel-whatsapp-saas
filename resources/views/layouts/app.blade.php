@@ -52,6 +52,10 @@
                         <a href="{{ route('api-keys') }}" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('api-keys') ? 'nav-active' : '' }}">
                             <i class="fas fa-key mr-2"></i>API Keys
                         </a>
+                        <a href="{{ route('campaigns') }}" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('campaigns*') ? 'nav-active' : '' }}">
+                            <i class="fas fa-bullhorn mr-2"></i>Campaigns
+                        </a>
+
                     </nav>
 
                     <!-- Theme Toggle & User Menu -->
