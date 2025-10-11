@@ -95,22 +95,22 @@ class DashboardManager {
             connected: {
                 class: 'status-connected',
                 text: 'Connected',
-                bgClass: 'flex items-center text-sm bg-green-100 px-3 py-2 rounded-full text-green-800'
+                bgClass: 'flex items-center text-sm bg-green-100 dark:bg-gray-700 px-3 py-2 rounded-full text-green-800'
             },
             qr: {
                 class: 'status-qr',
                 text: 'Scan QR Code',
-                bgClass: 'flex items-center text-sm bg-yellow-100 px-3 py-2 rounded-full text-yellow-800'
+                bgClass: 'flex items-center text-sm bg-yellow-100 dark:bg-gray-700 px-3 py-2 rounded-full text-yellow-800'
             },
             disconnected: {
                 class: 'status-disconnected',
                 text: 'Disconnected',
-                bgClass: 'flex items-center text-sm bg-gray-100 px-3 py-2 rounded-full text-gray-800'
+                bgClass: 'flex items-center text-sm bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-full text-gray-800'
             },
             default: {
                 class: 'status-disconnected',
                 text: 'Connection Error',
-                bgClass: 'flex items-center text-sm bg-red-100 px-3 py-2 rounded-full text-red-800'
+                bgClass: 'flex items-center text-sm bg-red-100 dark:bg-gray-700 px-3 py-2 rounded-full text-red-800'
             }
         };
 
