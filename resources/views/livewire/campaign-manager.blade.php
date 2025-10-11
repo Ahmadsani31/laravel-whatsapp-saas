@@ -293,163 +293,172 @@
 
     <!-- Campaigns List -->
     @if(empty($campaigns))
-    <div class="text-center py-12">
-        <i class="fas fa-bullhorn text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-        <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">No Campaigns Yet</h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">Create your first marketing campaign to get started</p>
-        <button wire:click="showCreateCampaign" 
-            class="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-            <i class="fas fa-plus mr-2"></i>
-            Create First Campaign
-        </button>
+    <div class="empty-state">
+        <div class="empty-state-card">
+            <i class="fas fa-bullhorn empty-state-icon text-blue-400 dark:text-blue-500"></i>
+            <h3 class="text-3xl font-bold text-gray-700 dark:text-gray-300 mb-4">No Campaigns Yet</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 text-lg">Create your first marketing campaign to get started</p>
+            <button wire:click="showCreateCampaign" class="action-btn action-btn-start">
+                <i class="fas fa-plus mr-2"></i>
+                Create First Campaign
+            </button>
+        </div>
     </div>
     @else
-    <div class="grid gap-6">
+    <div class="space-y-6">
         @foreach($campaigns as $campaign)
         <div class="bg-white dark:bg-gray-800 rounded-xl card-shadow p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <div class="flex items-center mb-2">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mr-3">{{ $campaign['name'] }}</h3>
-                        <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-{{ $campaign['status_color'] }}-100 dark:bg-{{ $campaign['status_color'] }}-900 text-{{ $campaign['status_color'] }}-800 dark:text-{{ $campaign['status_color'] }}-200">
-                            {{ ucfirst($campaign['status']) }}
-                        </span>
-                    </div>
-                    
-                    @if($campaign['description'])
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ $campaign['description'] }}</p>
-                    @endif
+            <div class="p-8">
+                <div class="flex items-start justify-between">
 
-                    <!-- Progress Bar -->
-                    <div class="mb-4">
-                        <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
-                            <span>Progress</span>
-                            <span>{{ $campaign['progress_percentage'] }}%</span>
+                    <div class="flex-1">
+                        <!-- Campaign Header -->
+                        <div class="flex items-center mb-6">
+                            <div class="campaign-icon mr-6">
+                                <i class="fas fa-bullhorn text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $campaign['name'] }}</h3>
+                                <div class="flex items-center">
+                                    <span class="status-badge status-badge-{{ $campaign['status'] }}">
+                                        <i class="fas fa-circle mr-2 text-xs"></i>
+                                        {{ ucfirst($campaign['status']) }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300" 
-                                style="width: {{ $campaign['progress_percentage'] }}%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Stats -->
-                    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $campaign['total_recipients'] }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Total</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ $campaign['sent_count'] }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Sent</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-green-600 dark:text-green-400">{{ $campaign['delivered_count'] }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Delivered</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ $campaign['read_count'] }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Read</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-orange-600 dark:text-orange-400">{{ $campaign['reply_count'] ?? 0 }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Replies</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-red-600 dark:text-red-400">{{ $campaign['failed_count'] }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Failed</div>
-                        </div>
-                    </div>
-
-                    <!-- Timestamps -->
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        <div>Created: {{ $campaign['created_at'] }}</div>
-                        @if($campaign['started_at'])
-                        <div>Started: {{ $campaign['started_at'] }}</div>
+                        
+                        @if($campaign['description'])
+                        <p class="text-gray-600 dark:text-gray-400 mb-6 text-lg leading-relaxed">{{ $campaign['description'] }}</p>
                         @endif
-                        @if($campaign['completed_at'])
-                        <div>Completed: {{ $campaign['completed_at'] }}</div>
-                        @endif
+
+                        <!-- Progress Bar -->
+                        <div class="mb-8">
+                            <div class="flex justify-between text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
+                                <span>Campaign Progress</span>
+                                <span>{{ $campaign['progress_percentage'] }}%</span>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: {{ $campaign['progress_percentage'] }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+                            <div class="stat-card stat-card-total">
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ number_format($campaign['total_recipients']) }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total</div>
+                            </div>
+                            <div class="stat-card stat-card-sent">
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{{ number_format($campaign['sent_count']) }}</div>
+                                <div class="text-xs text-blue-800 dark:text-blue-200 font-medium">Sent</div>
+                            </div>
+                            <div class="stat-card stat-card-delivered">
+                                <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">{{ number_format($campaign['delivered_count']) }}</div>
+                                <div class="text-xs text-green-800 dark:text-green-200 font-medium">Delivered</div>
+                            </div>
+                            <div class="stat-card stat-card-read">
+                                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">{{ number_format($campaign['read_count']) }}</div>
+                                <div class="text-xs text-purple-800 dark:text-purple-200 font-medium">Read</div>
+                            </div>
+                            <div class="stat-card stat-card-replies">
+                                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{{ number_format($campaign['reply_count'] ?? 0) }}</div>
+                                <div class="text-xs text-orange-800 dark:text-orange-200 font-medium">Replies</div>
+                            </div>
+                            <div class="stat-card stat-card-failed">
+                                <div class="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">{{ number_format($campaign['failed_count']) }}</div>
+                                <div class="text-xs text-red-800 dark:text-red-200 font-medium">Failed</div>
+                            </div>
+                        </div>
+
+                        <!-- Timestamps -->
+                        <div class="text-sm text-gray-500 dark:text-gray-400 space-y-2 bg-gray-50 dark:bg-gray-700 rounded-2xl p-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-plus mr-3 text-blue-500"></i>
+                                <span><strong>Created:</strong> {{ $campaign['created_at'] }}</span>
+                            </div>
+                            @if($campaign['started_at'])
+                            <div class="flex items-center">
+                                <i class="fas fa-play mr-3 text-green-500"></i>
+                                <span><strong>Started:</strong> {{ $campaign['started_at'] }}</span>
+                            </div>
+                            @endif
+                            @if($campaign['completed_at'])
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-3 text-purple-500"></i>
+                                <span><strong>Completed:</strong> {{ $campaign['completed_at'] }}</span>
+                            </div>
+                            @endif
+                        </div>
                     </div>
-                </div>
 
-                <!-- Actions -->
-                <div class="flex flex-col space-y-2 ml-4">
-                    @if($campaign['can_start'])
-                    <button wire:click="startCampaign({{ $campaign['id'] }})" 
-                        wire:confirm="Are you sure you want to start this campaign?"
-                        class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors text-sm">
-                        <i class="fas fa-play mr-1"></i>
-                        Start
-                    </button>
-                    @endif
+                    <!-- Actions Panel -->
+                    <div class="ml-8 flex flex-col space-y-3 min-w-[180px]">
+                        <!-- Control Buttons -->
+                        @if($campaign['can_start'])
+                        <button wire:click="startCampaign({{ $campaign['id'] }})" wire:confirm="Are you sure you want to start this campaign?" class="action-btn action-btn-start">
+                            <i class="fas fa-play mr-2"></i>
+                            Start Campaign
+                        </button>
+                        @endif
 
-                    @if($campaign['can_pause'])
-                    <button wire:click="pauseCampaign({{ $campaign['id'] }})" 
-                        class="px-4 py-2 bg-yellow-600 dark:bg-yellow-700 text-white rounded-lg hover:bg-yellow-700 dark:hover:bg-yellow-600 transition-colors text-sm">
-                        <i class="fas fa-pause mr-1"></i>
-                        Pause
-                    </button>
-                    @endif
+                        @if($campaign['can_pause'])
+                        <button wire:click="pauseCampaign({{ $campaign['id'] }})" class="action-btn action-btn-pause">
+                            <i class="fas fa-pause mr-2"></i>
+                            Pause Campaign
+                        </button>
+                        @endif
 
-                    @if($campaign['can_stop'])
-                    <button wire:click="stopCampaign({{ $campaign['id'] }})" 
-                        wire:confirm="Are you sure you want to stop this campaign?"
-                        class="px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors text-sm">
-                        <i class="fas fa-stop mr-1"></i>
-                        Stop
-                    </button>
-                    @endif
+                        @if($campaign['can_stop'])
+                        <button wire:click="stopCampaign({{ $campaign['id'] }})" wire:confirm="Are you sure you want to stop this campaign?" class="action-btn action-btn-stop">
+                            <i class="fas fa-stop mr-2"></i>
+                            Stop Campaign
+                        </button>
+                        @endif
 
-                    @if($campaign['can_restart'])
-                    <button wire:click="restartCampaign({{ $campaign['id'] }})" 
-                        wire:confirm="Are you sure you want to restart this campaign? All messages will be reset and sent again."
-                        class="px-4 py-2 bg-purple-600 dark:bg-purple-700 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors text-sm">
-                        <i class="fas fa-redo mr-1"></i>
-                        Restart
-                    </button>
-                    @endif
+                        @if($campaign['can_restart'])
+                        <button wire:click="restartCampaign({{ $campaign['id'] }})" wire:confirm="Are you sure you want to restart this campaign? All messages will be reset and sent again." class="action-btn action-btn-restart">
+                            <i class="fas fa-redo mr-2"></i>
+                            Restart
+                        </button>
+                        @endif
 
-                    @if($campaign['can_edit'])
-                    <button wire:click="showEditCampaign({{ $campaign['id'] }})" 
-                        class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm">
-                        <i class="fas fa-edit mr-1"></i>
-                        Edit
-                    </button>
-                    @endif
+                        <!-- Quick Access -->
+                        <a href="{{ route('campaigns.details', $campaign['id']) }}" class="action-btn action-btn-details text-center">
+                            <i class="fas fa-eye mr-2"></i>
+                            View Details
+                        </a>
 
-                    <a href="{{ route('campaigns.details', $campaign['id']) }}" 
-                        class="inline-block px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-sm text-center">
-                        <i class="fas fa-eye mr-1"></i>
-                        View Details
-                    </a>
+                        @if($campaign['reply_count'] > 0)
+                        <a href="{{ route('campaigns.replies', $campaign['id']) }}" class="action-btn action-btn-replies text-center">
+                            <i class="fas fa-comments mr-2"></i>
+                            Replies ({{ $campaign['reply_count'] }})
+                        </a>
+                        @endif
 
-                    @if($campaign['reply_count'] > 0)
-                    <a href="{{ route('campaigns.replies', $campaign['id']) }}" 
-                        class="inline-block px-4 py-2 bg-orange-600 dark:bg-orange-700 text-white rounded-lg hover:bg-orange-700 dark:hover:bg-orange-600 transition-colors text-sm text-center">
-                        <i class="fas fa-comments mr-1"></i>
-                        Replies ({{ $campaign['reply_count'] }})
-                    </a>
-                    @endif
+                        <!-- More Actions -->
+                        @if($campaign['can_edit'])
+                        <button wire:click="showEditCampaign({{ $campaign['id'] }})" class="action-btn action-btn-edit">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Campaign
+                        </button>
+                        @endif
 
-                    <a href="{{ route('campaigns.auto-replies', $campaign['id']) }}" 
-                        class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm text-center">
-                        <i class="fas fa-robot mr-1"></i>
-                        Auto Replies
-                    </a>
+                        <a href="{{ route('campaigns.auto-replies', $campaign['id']) }}" class="action-btn action-btn-auto-replies text-center">
+                            <i class="fas fa-robot mr-2"></i>
+                            Auto Replies
+                        </a>
 
-                    <button wire:click="cloneCampaign({{ $campaign['id'] }})" 
-                        wire:confirm="Are you sure you want to clone this campaign? A copy will be created as a draft."
-                        class="px-4 py-2 bg-teal-600 dark:bg-teal-700 text-white rounded-lg hover:bg-teal-700 dark:hover:bg-teal-600 transition-colors text-sm">
-                        <i class="fas fa-copy mr-1"></i>
-                        Clone
-                    </button>
+                        <button wire:click="cloneCampaign({{ $campaign['id'] }})" wire:confirm="Are you sure you want to clone this campaign? A copy will be created as a draft." class="action-btn action-btn-clone">
+                            <i class="fas fa-copy mr-2"></i>
+                            Clone Campaign
+                        </button>
 
-                    <button wire:click="deleteCampaign({{ $campaign['id'] }})" 
-                        wire:confirm="Are you sure you want to delete this campaign? This action cannot be undone."
-                        class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-sm">
-                        <i class="fas fa-trash mr-1"></i>
-                        Delete
-                    </button>
+                        <button wire:click="deleteCampaign({{ $campaign['id'] }})" wire:confirm="Are you sure you want to delete this campaign? This action cannot be undone." class="action-btn action-btn-delete">
+                            <i class="fas fa-trash mr-2"></i>
+                            Delete Campaign
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
