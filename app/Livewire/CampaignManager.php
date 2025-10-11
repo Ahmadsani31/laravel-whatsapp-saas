@@ -110,10 +110,10 @@ class CampaignManager extends Component
 
         try {
             $campaignService = app(CampaignService::class);
-            
+
             // Parse phone numbers
             $phoneNumbers = $campaignService->parsePhoneNumbers($this->phoneNumbers);
-            
+
             if (empty($phoneNumbers)) {
                 $this->setMessage('No valid phone numbers found.', 'error');
                 return;
@@ -134,7 +134,6 @@ class CampaignManager extends Component
             $this->setMessage("Campaign '{$campaign->name}' created successfully with " . count($phoneNumbers) . " recipients!", 'success');
             $this->hideCreateForm();
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to create campaign: ' . $e->getMessage());
             $this->setMessage('Failed to create campaign: ' . $e->getMessage(), 'error');
@@ -146,12 +145,11 @@ class CampaignManager extends Component
         try {
             $campaign = Campaign::findOrFail($campaignId);
             $campaignService = app(CampaignService::class);
-            
+
             $campaignService->startCampaign($campaign);
-            
+
             $this->setMessage("Campaign '{$campaign->name}' started successfully!", 'success');
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to start campaign: ' . $e->getMessage());
             $this->setMessage('Failed to start campaign: ' . $e->getMessage(), 'error');
@@ -163,12 +161,11 @@ class CampaignManager extends Component
         try {
             $campaign = Campaign::findOrFail($campaignId);
             $campaignService = app(CampaignService::class);
-            
+
             $campaignService->pauseCampaign($campaign);
-            
+
             $this->setMessage("Campaign '{$campaign->name}' paused successfully!", 'success');
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to pause campaign: ' . $e->getMessage());
             $this->setMessage('Failed to pause campaign: ' . $e->getMessage(), 'error');
@@ -180,12 +177,11 @@ class CampaignManager extends Component
         try {
             $campaign = Campaign::findOrFail($campaignId);
             $campaignService = app(CampaignService::class);
-            
+
             $campaignService->stopCampaign($campaign);
-            
+
             $this->setMessage("Campaign '{$campaign->name}' stopped successfully!", 'success');
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to stop campaign: ' . $e->getMessage());
             $this->setMessage('Failed to stop campaign: ' . $e->getMessage(), 'error');
@@ -215,12 +211,11 @@ class CampaignManager extends Component
         try {
             $campaign = Campaign::findOrFail($campaignId);
             $campaignService = app(CampaignService::class);
-            
+
             $campaignService->restartCampaign($campaign, 'Manual restart by user');
-            
+
             $this->setMessage("Campaign '{$campaign->name}' restarted successfully!", 'success');
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to restart campaign: ' . $e->getMessage());
             $this->setMessage('Failed to restart campaign: ' . $e->getMessage(), 'error');
@@ -231,7 +226,7 @@ class CampaignManager extends Component
     {
         try {
             $campaign = Campaign::findOrFail($campaignId);
-            
+
             if (!$campaign->canEdit()) {
                 $this->setMessage('Campaign cannot be edited while running. Please pause it first.', 'error');
                 return;
@@ -244,9 +239,8 @@ class CampaignManager extends Component
             $this->messageContent = $campaign->message_content;
             $this->templateName = $campaign->template_name;
             $this->phoneNumbers = implode("\n", $campaign->phone_numbers);
-            
-            $this->showEditForm = true;
 
+            $this->showEditForm = true;
         } catch (\Exception $e) {
             Log::error('Failed to load campaign for editing: ' . $e->getMessage());
             $this->setMessage('Failed to load campaign for editing.', 'error');
@@ -266,10 +260,10 @@ class CampaignManager extends Component
 
         try {
             $campaignService = app(CampaignService::class);
-            
+
             // Parse phone numbers
             $phoneNumbers = $campaignService->parsePhoneNumbers($this->phoneNumbers);
-            
+
             if (empty($phoneNumbers)) {
                 $this->setMessage('No valid phone numbers found.', 'error');
                 return;
@@ -288,10 +282,35 @@ class CampaignManager extends Component
             $this->setMessage("Campaign '{$this->editingCampaign->name}' updated successfully!", 'success');
             $this->hideEditForm();
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to update campaign: ' . $e->getMessage());
             $this->setMessage('Failed to update campaign: ' . $e->getMessage(), 'error');
+        }
+    }
+
+    public function cloneCampaign($campaignId)
+    {
+        try {
+            $originalCampaign = Campaign::findOrFail($campaignId);
+            $campaignService = app(CampaignService::class);
+
+            $cloneData = [
+                'name' => $originalCampaign->name . ' (Copy)',
+                'description' => $originalCampaign->description,
+                'message_type' => $originalCampaign->message_type,
+                'message_content' => $originalCampaign->message_content,
+                'template_name' => $originalCampaign->template_name,
+                'phone_numbers' => $originalCampaign->phone_numbers,
+                'scheduled_at' => null // Clone as draft
+            ];
+
+            $clonedCampaign = $campaignService->createCampaign($cloneData);
+
+            $this->setMessage("Campaign '{$originalCampaign->name}' cloned successfully as '{$clonedCampaign->name}'!", 'success');
+            $this->loadCampaigns();
+        } catch (\Exception $e) {
+            Log::error('Failed to clone campaign: ' . $e->getMessage());
+            $this->setMessage('Failed to clone campaign: ' . $e->getMessage(), 'error');
         }
     }
 
@@ -300,20 +319,19 @@ class CampaignManager extends Component
         try {
             $campaign = Campaign::findOrFail($campaignId);
             $campaignName = $campaign->name;
-            
+
             // Delete related replies and records
             $campaign->replies()->delete();
             $campaign->restarts()->delete();
-            
+
             // Delete campaign messages
             $campaign->messages()->delete();
-            
+
             // Delete campaign
             $campaign->delete();
-            
+
             $this->setMessage("Campaign '{$campaignName}' deleted successfully!", 'success');
             $this->loadCampaigns();
-
         } catch (\Exception $e) {
             Log::error('Failed to delete campaign: ' . $e->getMessage());
             $this->setMessage('Failed to delete campaign.', 'error');
@@ -341,7 +359,7 @@ class CampaignManager extends Component
     {
         $this->message = $message;
         $this->messageType_alert = $type;
-        
+
         // Auto-clear message after 5 seconds
         $this->dispatch('message-shown');
     }

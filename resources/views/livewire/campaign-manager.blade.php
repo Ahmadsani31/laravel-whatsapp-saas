@@ -437,6 +437,13 @@
                         Auto Replies
                     </a>
 
+                    <button wire:click="cloneCampaign({{ $campaign['id'] }})" 
+                        wire:confirm="Are you sure you want to clone this campaign? A copy will be created as a draft."
+                        class="px-4 py-2 bg-teal-600 dark:bg-teal-700 text-white rounded-lg hover:bg-teal-700 dark:hover:bg-teal-600 transition-colors text-sm">
+                        <i class="fas fa-copy mr-1"></i>
+                        Clone
+                    </button>
+
                     <button wire:click="deleteCampaign({{ $campaign['id'] }})" 
                         wire:confirm="Are you sure you want to delete this campaign? This action cannot be undone."
                         class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-sm">
