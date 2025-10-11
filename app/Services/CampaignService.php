@@ -469,6 +469,9 @@ class CampaignService
                 }
             }
 
+            // Process auto reply
+            $this->processAutoReplyForIncomingMessage($reply);
+
             return $reply;
         } catch (\Exception $e) {
             Log::error('Failed to process incoming reply: ' . $e->getMessage());
@@ -554,5 +557,18 @@ class CampaignService
 
         Log::warning("No campaign message found for any format of number: {$phoneNumber}");
         return null;
+    }
+
+    /**
+     * Process auto reply for incoming message
+     */
+    protected function processAutoReplyForIncomingMessage(CampaignReply $reply)
+    {
+        try {
+            $autoReplyService = app(AutoReplyService::class);
+            $autoReplyService->processAutoReply($reply);
+        } catch (\Exception $e) {
+            Log::error('Failed to process auto reply: ' . $e->getMessage());
+        }
     }
 }

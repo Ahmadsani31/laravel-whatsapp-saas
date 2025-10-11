@@ -15,16 +15,16 @@
             <p class="text-gray-600 dark:text-gray-400">{{ $campaign->description }}</p>
             @endif
         </div>
-        
+
         <div class="flex flex-wrap gap-3">
-            <button wire:click="refreshStats" 
+            <button wire:click="refreshStats"
                 class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
                 <i class="fas fa-sync-alt mr-2"></i>
                 Refresh Stats
             </button>
-            
+
             @if($campaign->failed_count > 0)
-            <button wire:click="retryFailedMessages" 
+            <button wire:click="retryFailedMessages"
                 wire:confirm="Are you sure you want to retry all failed messages?"
                 class="bg-orange-600 dark:bg-orange-700 text-white px-4 py-2 rounded-lg hover:bg-orange-700 dark:hover:bg-orange-600 transition-colors">
                 <i class="fas fa-redo mr-2"></i>
@@ -33,14 +33,20 @@
             @endif
 
             @if($campaign->reply_count > 0)
-            <a href="{{ route('campaigns.replies', $campaign->id) }}" 
+            <a href="{{ route('campaigns.replies', $campaign->id) }}"
                 class="bg-purple-600 dark:bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors">
                 <i class="fas fa-comments mr-2"></i>
                 View Replies ({{ $campaign->reply_count }})
             </a>
             @endif
-            
-            <button wire:click="exportResults" 
+
+            <a href="{{ route('campaigns.auto-replies', $campaign->id) }}"
+                class="bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+                <i class="fas fa-robot mr-2"></i>
+                Auto Replies
+            </a>
+
+            <button wire:click="exportResults"
                 class="bg-green-600 dark:bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors">
                 <i class="fas fa-download mr-2"></i>
                 Export CSV
@@ -54,37 +60,37 @@
             <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total'] }}</div>
             <div class="text-sm text-gray-600 dark:text-gray-400">Total</div>
         </div>
-        
+
         <div class="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $stats['pending'] }}</div>
             <div class="text-sm text-yellow-800 dark:text-yellow-200">Pending</div>
         </div>
-        
+
         <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $stats['sent'] }}</div>
             <div class="text-sm text-blue-800 dark:text-blue-200">Sent</div>
         </div>
-        
+
         <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $stats['delivered'] }}</div>
             <div class="text-sm text-green-800 dark:text-green-200">Delivered</div>
         </div>
-        
+
         <div class="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ $stats['read'] }}</div>
             <div class="text-sm text-purple-800 dark:text-purple-200">Read</div>
         </div>
-        
+
         <div class="bg-orange-50 dark:bg-orange-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['replies'] }}</div>
             <div class="text-sm text-orange-800 dark:text-orange-200">Replies</div>
         </div>
-        
+
         <div class="bg-red-50 dark:bg-red-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{ $stats['failed'] }}</div>
             <div class="text-sm text-red-800 dark:text-red-200">Failed</div>
         </div>
-        
+
         <div class="bg-indigo-50 dark:bg-indigo-900 p-4 rounded-lg text-center">
             <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ $stats['reply_rate'] }}%</div>
             <div class="text-sm text-indigo-800 dark:text-indigo-200">Reply Rate</div>
@@ -98,7 +104,7 @@
             <span>{{ $stats['progress_percentage'] }}% Complete</span>
         </div>
         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-            <div class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500" 
+            <div class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500"
                 style="width: {{ $stats['progress_percentage'] }}%"></div>
         </div>
         <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -114,7 +120,7 @@
                 <!-- Status Filter -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Status</label>
-                    <select wire:model.live="filterStatus" 
+                    <select wire:model.live="filterStatus"
                         class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
@@ -128,7 +134,7 @@
                 <!-- Phone Search -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Phone</label>
-                    <input type="text" wire:model.live.debounce.300ms="searchPhone" 
+                    <input type="text" wire:model.live.debounce.300ms="searchPhone"
                         placeholder="Search phone number..."
                         class="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
@@ -195,7 +201,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             @if($message->replies->count() > 0)
-                            <button wire:click="viewReplies({{ $message->id }})" 
+                            <button wire:click="viewReplies({{ $message->id }})"
                                 class="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 font-medium">
                                 <i class="fas fa-comments mr-1"></i>
                                 {{ $message->replies->count() }} {{ $message->replies->count() == 1 ? 'Reply' : 'Replies' }}

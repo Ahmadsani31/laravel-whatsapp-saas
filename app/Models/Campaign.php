@@ -75,6 +75,11 @@ class Campaign extends Model
         return $this->hasMany(CampaignRestart::class);
     }
 
+    public function autoReplies()
+    {
+        return $this->hasMany(AutoReply::class);
+    }
+
     public function getStatusColorAttribute()
     {
         return match($this->status) {

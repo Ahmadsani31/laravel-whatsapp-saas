@@ -105,26 +105,4 @@
             </button>
         </div>
     </div>
-
-    <!-- Statistics -->
-    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h4 class="font-bold text-gray-800 dark:text-gray-200 mb-2">
-            <i class="fas fa-chart-bar mr-1"></i>
-            Quick Stats
-        </h4>
-        <div class="grid grid-cols-3 gap-4 text-center">
-            <div>
-                <div class="text-2xl font-bold text-blue-600">0</div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">Messages Sent</div>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-green-600 dark:text-green-400">0</div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">Numbers Checked</div>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">100%</div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">Success Rate</div>
-            </div>
-        </div>
-    </div>
 </div>

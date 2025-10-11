@@ -431,6 +431,12 @@
                     </a>
                     @endif
 
+                    <a href="{{ route('campaigns.auto-replies', $campaign['id']) }}" 
+                        class="inline-block px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm text-center">
+                        <i class="fas fa-robot mr-1"></i>
+                        Auto Replies
+                    </a>
+
                     <button wire:click="deleteCampaign({{ $campaign['id'] }})" 
                         wire:confirm="Are you sure you want to delete this campaign? This action cannot be undone."
                         class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-sm">

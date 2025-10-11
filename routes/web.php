@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/campaigns', App\Livewire\CampaignManager::class)->name('campaigns');
     Route::get('/campaigns/{id}', App\Livewire\CampaignDetails::class)->name('campaigns.details');
     Route::get('/campaigns/{id}/replies', App\Livewire\CampaignReplies::class)->name('campaigns.replies');
+    Route::get('/campaigns/{id}/auto-replies', App\Livewire\AutoReplyManager::class)->name('campaigns.auto-replies');
 
 
     // Theme preference
