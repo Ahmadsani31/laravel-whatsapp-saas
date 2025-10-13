@@ -98,37 +98,42 @@ class CampaignService
         return $campaign;
     }
 
-    protected function processCampaignMessages(Campaign $campaign)
+    public function processCampaignMessages(Campaign $campaign)
     {
         $pendingMessages = $campaign->messages()
             ->where('status', CampaignMessage::STATUS_PENDING)
             ->get();
 
         foreach ($pendingMessages as $message) {
-            try {
-                $result = $this->whatsappService->sendMessage(
-                    $message->phone_number,
-                    $message->message_content
-                );
-
-                if ($result['success'] ?? false) {
-                    $message->markAsSent($result['messageId'] ?? null);
-                    $this->updateCampaignStats($campaign);
-                } else {
-                    $message->markAsFailed($result['error'] ?? 'Unknown error');
-                }
-
-                // Small delay between messages to avoid blocking
-                usleep(500000); // 0.5 seconds
-
-            } catch (\Exception $e) {
-                Log::error('Failed to send campaign message: ' . $e->getMessage());
-                $message->markAsFailed($e->getMessage());
-            }
+            $this->processSingleMessage($message);
         }
 
         // Update campaign status if completed
         $this->checkCampaignCompletion($campaign);
+    }
+
+    public function processSingleMessage(CampaignMessage $message)
+    {
+        try {
+            $result = $this->whatsappService->sendMessage(
+                $message->phone_number,
+                $message->message_content
+            );
+
+            if ($result['success'] ?? false) {
+                $message->markAsSent($result['messageId'] ?? null);
+                $this->updateCampaignStats($message->campaign);
+            } else {
+                $message->markAsFailed($result['error'] ?? 'Unknown error');
+            }
+
+            // Small delay to avoid blocking
+            usleep(500000); // 0.5 seconds
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send campaign message: ' . $e->getMessage());
+            $message->markAsFailed($e->getMessage());
+        }
     }
 
     public function updateCampaignStats(Campaign $campaign)

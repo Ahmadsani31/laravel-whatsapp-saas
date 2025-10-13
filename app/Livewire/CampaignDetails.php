@@ -4,10 +4,10 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use App\Models\Campaign;
 use App\Models\CampaignMessage;
-use App\Models\CampaignReply;
 use App\Services\CampaignService;
 use Illuminate\Support\Facades\Log;
 
@@ -23,6 +23,10 @@ class CampaignDetails extends Component
     public $showReplies = false;
     public $selectedMessageReplies = [];
 
+    // Message system
+    public $message = '';
+    public $messageType = '';
+
     public function mount($id)
     {
         $this->campaignId = $id;
@@ -34,7 +38,7 @@ class CampaignDetails extends Component
         try {
             $this->campaign = Campaign::findOrFail($this->campaignId);
         } catch (\Exception $e) {
-            session()->flash('error', 'Campaign not found.');
+            $this->setMessage('Campaign not found.', 'error');
             return redirect()->route('campaigns');
         }
     }
@@ -55,11 +59,11 @@ class CampaignDetails extends Component
             $campaignService = app(CampaignService::class);
             $campaignService->updateCampaignStats($this->campaign);
             $this->loadCampaign();
-            
-            session()->flash('success', 'Campaign statistics refreshed successfully!');
+
+            $this->setMessage('Campaign statistics refreshed successfully!', 'success');
         } catch (\Exception $e) {
             Log::error('Failed to refresh campaign stats: ' . $e->getMessage());
-            session()->flash('error', 'Failed to refresh statistics.');
+            $this->setMessage('Failed to refresh statistics.', 'error');
         }
     }
 
@@ -71,32 +75,41 @@ class CampaignDetails extends Component
                 ->get();
 
             if ($failedMessages->isEmpty()) {
-                session()->flash('info', 'No failed messages to retry.');
+                $this->setMessage('No failed messages to retry.', 'info');
                 return;
             }
 
+            $campaignService = app(CampaignService::class);
+            $retryCount = 0;
+
             foreach ($failedMessages as $message) {
+                // Reset message status
                 $message->update([
                     'status' => CampaignMessage::STATUS_PENDING,
                     'failed_at' => null,
-                    'error_message' => null
+                    'error_message' => null,
+                    'whatsapp_message_id' => null
                 ]);
+
+                // Process the message immediately
+                $campaignService->processSingleMessage($message);
+                $retryCount++;
             }
 
-            // Restart campaign if it was stopped
+            // Update campaign status if it was failed
             if ($this->campaign->status === Campaign::STATUS_FAILED) {
                 $this->campaign->update(['status' => Campaign::STATUS_RUNNING]);
             }
 
-            $campaignService = app(CampaignService::class);
-            $campaignService->processCampaignMessages($this->campaign);
+            // Update campaign statistics
+            $campaignService->updateCampaignStats($this->campaign);
 
-            session()->flash('success', "Retrying {$failedMessages->count()} failed messages.");
+            $this->setMessage("Successfully retried {$retryCount} failed messages.", 'success');
+            $this->dispatch('retry-completed', ['count' => $retryCount]);
             $this->loadCampaign();
-
         } catch (\Exception $e) {
             Log::error('Failed to retry failed messages: ' . $e->getMessage());
-            session()->flash('error', 'Failed to retry failed messages.');
+            $this->setMessage('Failed to retry failed messages: ' . $e->getMessage(), 'error');
         }
     }
 
@@ -112,11 +125,11 @@ class CampaignDetails extends Component
                     'is_processed' => $reply->is_processed
                 ];
             })->toArray();
-            
+
             $this->showReplies = true;
         } catch (\Exception $e) {
             Log::error('Failed to load message replies: ' . $e->getMessage());
-            session()->flash('error', 'Failed to load replies.');
+            $this->setMessage('Failed to load replies.', 'error');
         }
     }
 
@@ -126,17 +139,183 @@ class CampaignDetails extends Component
         $this->selectedMessageReplies = [];
     }
 
+    public function resendMessage($messageId)
+    {
+        try {
+            $message = CampaignMessage::findOrFail($messageId);
+
+            // Reset message status to pending
+            $message->update([
+                'status' => CampaignMessage::STATUS_PENDING,
+                'sent_at' => null,
+                'delivered_at' => null,
+                'read_at' => null,
+                'failed_at' => null,
+                'error_message' => null,
+                'whatsapp_message_id' => null
+            ]);
+
+            // Process the message immediately
+            $campaignService = app(CampaignService::class);
+            $campaignService->processSingleMessage($message);
+
+            $this->setMessage("Message to {$message->phone_number} has been queued for resending.", 'success');
+            $this->loadCampaign();
+        } catch (\Exception $e) {
+            Log::error('Failed to resend message: ' . $e->getMessage());
+            $this->setMessage('Failed to resend message.', 'error');
+        }
+    }
+
+    public function deleteMessage($messageId)
+    {
+        try {
+            $message = CampaignMessage::with('replies')->findOrFail($messageId);
+            $phoneNumber = $message->phone_number;
+
+            // Delete related replies first
+            $message->replies()->delete();
+
+            // Delete the message
+            $message->delete();
+
+            // Update campaign statistics
+            $this->campaign->decrement('total_recipients');
+
+            // Recalculate campaign stats
+            $campaignService = app(CampaignService::class);
+            $campaignService->updateCampaignStats($this->campaign);
+
+            $this->setMessage("Message to {$phoneNumber} has been deleted successfully.", 'success');
+            $this->loadCampaign();
+        } catch (\Exception $e) {
+            Log::error('Failed to delete message: ' . $e->getMessage());
+            $this->setMessage('Failed to delete message.', 'error');
+        }
+    }
+
+    #[On('bulkDeleteMessages')]
+    public function bulkDeleteMessages(...$params)
+    {
+        try {
+            // Log the received parameters for debugging
+            Log::info('bulkDeleteMessages called with params:', ['params' => $params]);
+
+            // Extract messageIds from parameters
+            $messageIds = [];
+            if (!empty($params)) {
+                // If first parameter is an array with messageIds
+                if (is_array($params) && isset($params)) {
+                    $messageIds = $params;
+                }
+            }
+
+            if (empty($messageIds)) {
+                $this->setMessage('No messages selected for deletion.', 'error');
+                return;
+            }
+
+            $messages = CampaignMessage::whereIn('id', $messageIds)->get();
+            $count = $messages->count();
+
+            if ($count === 0) {
+                $this->setMessage('No valid messages found for deletion.', 'error');
+                return;
+            }
+
+            foreach ($messages as $message) {
+                // Delete related replies first
+                $message->replies()->delete();
+                // Delete the message
+                $message->delete();
+            }
+
+            // Update campaign statistics
+            $this->campaign->decrement('total_recipients', $count);
+
+            // Recalculate campaign stats
+            $campaignService = app(CampaignService::class);
+            $campaignService->updateCampaignStats($this->campaign);
+
+            $this->setMessage("Successfully deleted {$count} messages.", 'success');
+            $this->dispatch('bulk-operation', ['success' => true, 'count' => $count, 'operation' => 'deleted']);
+            $this->dispatch('bulk-operation-completed');
+            $this->loadCampaign();
+        } catch (\Exception $e) {
+            Log::error('Failed to bulk delete messages: ' . $e->getMessage());
+            $this->setMessage('Failed to delete messages.', 'error');
+        }
+    }
+
+    #[On('bulkResendMessages')]
+    public function bulkResendMessages(...$params)
+    {
+        try {
+            // Log the received parameters for debugging
+            Log::info('bulkResendMessages called with params:', ['params' => $params]);
+
+            // Extract messageIds from parameters
+            $messageIds = [];
+            if (!empty($params)) {
+                // If first parameter is an array with messageIds
+                if (is_array($params) && isset($params)) {
+                    $messageIds = $params;
+                }
+            }
+
+            if (empty($messageIds)) {
+                $this->setMessage('No messages selected for resending.', 'error');
+                return;
+            }
+
+            $messages = CampaignMessage::whereIn('id', $messageIds)->get();
+
+            if ($messages->isEmpty()) {
+                $this->setMessage('No valid messages found for resending.', 'error');
+                return;
+            }
+
+            $campaignService = app(CampaignService::class);
+            $count = 0;
+
+            foreach ($messages as $message) {
+                // Reset message status
+                $message->update([
+                    'status' => CampaignMessage::STATUS_PENDING,
+                    'sent_at' => null,
+                    'delivered_at' => null,
+                    'read_at' => null,
+                    'failed_at' => null,
+                    'error_message' => null,
+                    'whatsapp_message_id' => null
+                ]);
+
+                // Process the message immediately
+                $campaignService->processSingleMessage($message);
+                $count++;
+            }
+
+            $this->setMessage("Successfully queued {$count} messages for resending.", 'success');
+            $this->dispatch('bulk-operation', ['success' => true, 'count' => $count, 'operation' => 'resent']);
+            $this->dispatch('bulk-operation-completed');
+            $this->loadCampaign();
+        } catch (\Exception $e) {
+            Log::error('Failed to bulk resend messages: ' . $e->getMessage());
+            $this->setMessage('Failed to resend messages.', 'error');
+        }
+    }
+
     public function exportResults()
     {
         try {
             $messages = $this->campaign->messages()->with('replies')->get();
-            
+
             $csvData = "Phone Number,Status,Sent At,Delivered At,Read At,Replies Count,Latest Reply,Error Message\n";
-            
+
             foreach ($messages as $message) {
                 $repliesCount = $message->replies->count();
                 $latestReply = $message->replies->sortByDesc('received_at')->first();
-                
+
                 $csvData .= sprintf(
                     "%s,%s,%s,%s,%s,%d,%s,%s\n",
                     $message->phone_number,
@@ -151,17 +330,16 @@ class CampaignDetails extends Component
             }
 
             $filename = 'campaign_' . $this->campaign->id . '_results_' . date('Y-m-d_H-i-s') . '.csv';
-            
+
             return response()->streamDownload(function () use ($csvData) {
                 echo $csvData;
             }, $filename, [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"'
             ]);
-
         } catch (\Exception $e) {
             Log::error('Failed to export campaign results: ' . $e->getMessage());
-            session()->flash('error', 'Failed to export results.');
+            $this->setMessage('Failed to export results.', 'error');
         }
     }
 
@@ -199,5 +377,21 @@ class CampaignDetails extends Component
             'messages' => $messages,
             'stats' => $stats
         ]);
+    }
+
+    public function clearMessage()
+    {
+        $this->message = '';
+        $this->messageType = '';
+    }
+
+    private function setMessage($message, $type = 'info')
+    {
+        // Send notification via Notyf using the new simplified system
+        $this->dispatch('notify', $type, $message);
+
+        // Also set local message as fallback
+        $this->message = $message;
+        $this->messageType = $type;
     }
 }

@@ -1,4 +1,19 @@
 <div>
+    <!-- Success/Error Messages -->
+    @if($message)
+    <div class="mb-6 p-4 rounded-xl {{ $messageType === 'success' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 text-green-800 dark:text-green-200' : ($messageType === 'error' ? 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-200' : 'bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200') }} card-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas {{ $messageType === 'success' ? 'fa-check-circle text-green-500 dark:text-green-400' : ($messageType === 'error' ? 'fa-exclamation-triangle text-red-500 dark:text-red-400' : 'fa-info-circle text-blue-500 dark:text-blue-400') }} mr-3"></i>
+                <span class="font-medium">{{ $message }}</span>
+            </div>
+            <button wire:click="clearMessage" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    @endif
+
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
         <div>
@@ -97,19 +112,85 @@
         </div>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-8 card-shadow">
-        <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-            <span>Campaign Progress</span>
-            <span>{{ $stats['progress_percentage'] }}% Complete</span>
+    <!-- Enhanced Progress Bar -->
+    <div class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8 mb-8 card-shadow border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <i class="fas fa-chart-line text-blue-600 dark:text-blue-400 mr-3"></i>
+                    Campaign Progress
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400">Real-time tracking of message delivery status</p>
+            </div>
+            <div class="text-right">
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ $stats['progress_percentage'] }}%</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Complete</div>
+            </div>
         </div>
-        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-            <div class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500"
-                style="width: {{ $stats['progress_percentage'] }}%"></div>
+
+        <!-- Multi-segment Progress Bar -->
+        <div class="relative">
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden shadow-inner">
+                <!-- Sent Progress -->
+                <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 ease-out"
+                    style="width: {{ $stats['total'] > 0 ? min(($stats['sent'] / $stats['total']) * 100, 100) : 0 }}%"></div>
+
+                <!-- Delivered Progress -->
+                <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000 ease-out"
+                    style="width: {{ $stats['total'] > 0 ? min(($stats['delivered'] / $stats['total']) * 100, 100) : 0 }}%"></div>
+
+                <!-- Read Progress -->
+                <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000 ease-out"
+                    style="width: {{ $stats['total'] > 0 ? min(($stats['read'] / $stats['total']) * 100, 100) : 0 }}%"></div>
+
+                <!-- Failed Progress -->
+                <div class="absolute top-0 right-0 h-full bg-gradient-to-l from-red-500 to-red-600 rounded-full transition-all duration-1000 ease-out"
+                    style="width: {{ $stats['total'] > 0 ? min(($stats['failed'] / $stats['total']) * 100, 100) : 0 }}%"></div>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="absolute top-0 left-0 h-full w-1 bg-white dark:bg-gray-300 rounded-full shadow-lg transition-all duration-1000 ease-out"
+                style="left: {{ min($stats['progress_percentage'], 100) }}%; transform: translateX(-50%)"></div>
         </div>
-        <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
-            <span>{{ $stats['sent'] + $stats['failed'] }} / {{ $stats['total'] }} processed</span>
-            <span>Success Rate: {{ $stats['success_rate'] }}%</span>
+
+        <!-- Progress Legend -->
+        <div class="flex flex-wrap justify-center gap-6 mt-6 text-sm">
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mr-2"></div>
+                <span class="text-gray-700 dark:text-gray-300">Sent: {{ number_format($stats['sent']) }}</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full mr-2"></div>
+                <span class="text-gray-700 dark:text-gray-300">Delivered: {{ number_format($stats['delivered']) }}</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full mr-2"></div>
+                <span class="text-gray-700 dark:text-gray-300">Read: {{ number_format($stats['read']) }}</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-3 h-3 bg-gradient-to-r from-red-500 to-red-600 rounded-full mr-2"></div>
+                <span class="text-gray-700 dark:text-gray-300">Failed: {{ number_format($stats['failed']) }}</span>
+            </div>
+        </div>
+
+        <!-- Detailed Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="text-center">
+                <div class="text-lg font-bold text-gray-900 dark:text-white">{{ number_format($stats['sent'] + $stats['failed']) }}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Processed</div>
+            </div>
+            <div class="text-center">
+                <div class="text-lg font-bold text-green-600 dark:text-green-400">{{ $stats['success_rate'] }}%</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Success Rate</div>
+            </div>
+            <div class="text-center">
+                <div class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ $stats['read_rate'] }}%</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Read Rate</div>
+            </div>
+            <div class="text-center">
+                <div class="text-lg font-bold text-orange-600 dark:text-orange-400">{{ $stats['reply_rate'] }}%</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Reply Rate</div>
+            </div>
         </div>
     </div>
 
@@ -146,6 +227,32 @@
         </div>
     </div>
 
+    <!-- Bulk Actions -->
+    <div id="bulk-actions" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-4 mb-6 border border-blue-200 dark:border-blue-700">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-blue-600 dark:text-blue-400 mr-3"></i>
+                <span class="font-semibold text-blue-800 dark:text-blue-200">
+                    <span id="selected-count">0</span> messages selected
+                </span>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="bulkResendMessages()" class="bulk-btn bg-green-600 hover:bg-green-700">
+                    <i class="fas fa-redo mr-2"></i>
+                    Resend Selected
+                </button>
+                <button onclick="bulkDeleteMessages()" class="bulk-btn bg-red-600 hover:bg-red-700">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete Selected
+                </button>
+                <button onclick="clearSelection()" class="bulk-btn bg-gray-600 hover:bg-gray-700">
+                    <i class="fas fa-times mr-2"></i>
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Messages List -->
     <div class="bg-white dark:bg-gray-800 rounded-lg card-shadow overflow-hidden">
         @if($messages->count() > 0)
@@ -153,6 +260,9 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            <input type="checkbox" id="select-all" class="custom-checkbox">
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Phone Number
                         </th>
@@ -174,11 +284,17 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Error
                         </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach($messages as $message)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input type="checkbox" class="message-checkbox custom-checkbox" value="{{ $message->id }}">
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="font-mono text-sm text-gray-900 dark:text-gray-100">
                                 {{ $message->phone_number }}
@@ -218,6 +334,25 @@
                             @else
                             -
                             @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="flex space-x-2">
+                                <!-- Resend Message Button -->
+                                <button wire:click="resendMessage({{ $message->id }})"
+                                    wire:confirm="Are you sure you want to resend this message?"
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+                                    title="Resend Message">
+                                    <i class="fas fa-redo text-sm"></i>
+                                </button>
+
+                                <!-- Delete Message Button -->
+                                <button wire:click="deleteMessage({{ $message->id }})"
+                                    wire:confirm="Are you sure you want to delete this message? This action cannot be undone."
+                                    class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
+                                    title="Delete Message">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     @endforeach

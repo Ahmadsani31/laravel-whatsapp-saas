@@ -20,12 +20,120 @@
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Campaign Manager</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">Create and manage WhatsApp marketing campaigns</p>
         </div>
-        <button wire:click="showCreateCampaign" 
+        <button wire:click="showCreateCampaign"
             class="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium">
             <i class="fas fa-plus mr-2"></i>
             New Campaign
         </button>
     </div>
+
+    <!-- Overall Statistics Dashboard -->
+    @if(!empty($campaigns))
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8 mb-8 border border-blue-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    <i class="fas fa-chart-line text-blue-600 dark:text-blue-400 mr-3"></i>
+                    Overall Campaign Statistics
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400">Complete overview of all your campaigns performance</p>
+            </div>
+            <div class="text-right">
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ count($campaigns) }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Total Campaigns</div>
+            </div>
+        </div>
+
+        <!-- Main Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ number_format($overallStats['total_recipients']) }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Recipients</div>
+                <div class="mt-2">
+                    <i class="fas fa-users text-gray-400 text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{{ number_format($overallStats['total_sent']) }}</div>
+                <div class="text-sm text-blue-800 dark:text-blue-200 font-medium">Messages Sent</div>
+                <div class="mt-2">
+                    <i class="fas fa-paper-plane text-blue-500 text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{{ number_format($overallStats['total_delivered']) }}</div>
+                <div class="text-sm text-green-800 dark:text-green-200 font-medium">Delivered</div>
+                <div class="mt-2">
+                    <i class="fas fa-check text-green-500 text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{{ number_format($overallStats['total_read']) }}</div>
+                <div class="text-sm text-purple-800 dark:text-purple-200 font-medium">Read</div>
+                <div class="mt-2">
+                    <i class="fas fa-check-double text-purple-500 text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">{{ number_format($overallStats['total_replies']) }}</div>
+                <div class="text-sm text-orange-800 dark:text-orange-200 font-medium">Replies</div>
+                <div class="mt-2">
+                    <i class="fas fa-comments text-orange-500 text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-3xl font-bold text-red-600 dark:text-red-400 mb-2">{{ number_format($overallStats['total_failed']) }}</div>
+                <div class="text-sm text-red-800 dark:text-red-200 font-medium">Failed</div>
+                <div class="mt-2">
+                    <i class="fas fa-times text-red-500 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">{{ $overallStats['avg_success_rate'] }}%</div>
+                <div class="text-sm text-indigo-800 dark:text-indigo-200 font-medium">Avg Success Rate</div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ min($overallStats['avg_success_rate'], 100) }}%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">{{ $overallStats['avg_read_rate'] }}%</div>
+                <div class="text-sm text-purple-800 dark:text-purple-200 font-medium">Avg Read Rate</div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-purple-600 h-2 rounded-full transition-all duration-500" style="width: {{ min($overallStats['avg_read_rate'], 100) }}%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">{{ $overallStats['avg_reply_rate'] }}%</div>
+                <div class="text-sm text-orange-800 dark:text-orange-200 font-medium">Avg Reply Rate</div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-orange-600 h-2 rounded-full transition-all duration-500" style="width: {{ min($overallStats['avg_reply_rate'], 100) }}%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">{{ $overallStats['active_campaigns'] }}</div>
+                <div class="text-sm text-green-800 dark:text-green-200 font-medium">Active Campaigns</div>
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                        <i class="fas fa-play mr-1"></i>
+                        Running
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Create Campaign Modal -->
     @if($showCreateForm)
@@ -44,7 +152,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Campaign Name <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" wire:model="name" 
+                    <input type="text" wire:model="name"
                         class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="e.g., Summer Sale 2024">
                     @error('name') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -84,7 +192,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Template Name
                     </label>
-                    <input type="text" wire:model="templateName" 
+                    <input type="text" wire:model="templateName"
                         class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="e.g., welcome_message">
                 </div>
@@ -161,7 +269,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Campaign Name <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" wire:model="name" 
+                    <input type="text" wire:model="name"
                         class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="e.g., Summer Sale 2024">
                     @error('name') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
@@ -327,19 +435,61 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         @if($campaign['description'])
                         <p class="text-gray-600 dark:text-gray-400 mb-6 text-lg leading-relaxed">{{ $campaign['description'] }}</p>
                         @endif
 
-                        <!-- Progress Bar -->
+                        <!-- Enhanced Progress Bar -->
                         <div class="mb-8">
                             <div class="flex justify-between text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
                                 <span>Campaign Progress</span>
                                 <span>{{ $campaign['progress_percentage'] }}%</span>
                             </div>
-                            <div class="progress-container">
-                                <div class="progress-bar" style="width: {{ $campaign['progress_percentage'] }}%"></div>
+
+                            <!-- Multi-segment Progress Bar -->
+                            <div class="relative">
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden shadow-inner">
+                                    <!-- Sent Progress -->
+                                    <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 ease-out"
+                                        style="width: {{ $campaign['total_recipients'] > 0 ? min(($campaign['sent_count'] / $campaign['total_recipients']) * 100, 100) : 0 }}%"></div>
+
+                                    <!-- Delivered Progress -->
+                                    <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000 ease-out"
+                                        style="width: {{ $campaign['total_recipients'] > 0 ? min(($campaign['delivered_count'] / $campaign['total_recipients']) * 100, 100) : 0 }}%"></div>
+
+                                    <!-- Read Progress -->
+                                    <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000 ease-out"
+                                        style="width: {{ $campaign['total_recipients'] > 0 ? min(($campaign['read_count'] / $campaign['total_recipients']) * 100, 100) : 0 }}%"></div>
+
+                                    <!-- Failed Progress -->
+                                    <div class="absolute top-0 right-0 h-full bg-gradient-to-l from-red-500 to-red-600 rounded-full transition-all duration-1000 ease-out"
+                                        style="width: {{ $campaign['total_recipients'] > 0 ? min(($campaign['failed_count'] / $campaign['total_recipients']) * 100, 100) : 0 }}%"></div>
+                                </div>
+
+                                <!-- Progress Indicator -->
+                                <div class="absolute top-0 left-0 h-full w-0.5 bg-white dark:bg-gray-300 rounded-full shadow-lg transition-all duration-1000 ease-out"
+                                    style="left: {{ min($campaign['progress_percentage'], 100) }}%; transform: translateX(-50%)"></div>
+                            </div>
+
+                            <!-- Progress Legend -->
+                            <div class="flex flex-wrap justify-center gap-4 mt-3 text-xs">
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mr-1"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Sent</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-green-500 to-green-600 rounded-full mr-1"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Delivered</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full mr-1"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Read</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full mr-1"></div>
+                                    <span class="text-gray-600 dark:text-gray-400">Failed</span>
+                                </div>
                             </div>
                         </div>
 
@@ -467,15 +617,3 @@
     @endif
 </div>
 
-@push('scripts')
-<script>
-    // Auto-clear messages after 5 seconds
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.on('message-shown', () => {
-            setTimeout(() => {
-                Livewire.dispatch('clearMessage');
-            }, 5000);
-        });
-    });
-</script>
-@endpush

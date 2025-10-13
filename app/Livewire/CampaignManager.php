@@ -15,6 +15,7 @@ class CampaignManager extends Component
     use WithPagination;
 
     public $campaigns = [];
+    public $overallStats = [];
     public $selectedCampaign = null;
     public $showCreateForm = false;
     public $showCampaignDetails = false;
@@ -50,6 +51,7 @@ class CampaignManager extends Component
     public function mount()
     {
         $this->loadCampaigns();
+        $this->calculateOverallStats();
     }
 
     public function loadCampaigns()
@@ -86,6 +88,9 @@ class CampaignManager extends Component
                     ];
                 })
                 ->toArray();
+                
+            // Recalculate overall stats after loading campaigns
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to load campaigns: ' . $e->getMessage());
             $this->setMessage('Failed to load campaigns.', 'error');
@@ -134,6 +139,7 @@ class CampaignManager extends Component
             $this->setMessage("Campaign '{$campaign->name}' created successfully with " . count($phoneNumbers) . " recipients!", 'success');
             $this->hideCreateForm();
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to create campaign: ' . $e->getMessage());
             $this->setMessage('Failed to create campaign: ' . $e->getMessage(), 'error');
@@ -149,7 +155,9 @@ class CampaignManager extends Component
             $campaignService->startCampaign($campaign);
 
             $this->setMessage("Campaign '{$campaign->name}' started successfully!", 'success');
+            $this->dispatch('campaign-started', ['name' => $campaign->name]);
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to start campaign: ' . $e->getMessage());
             $this->setMessage('Failed to start campaign: ' . $e->getMessage(), 'error');
@@ -165,7 +173,9 @@ class CampaignManager extends Component
             $campaignService->pauseCampaign($campaign);
 
             $this->setMessage("Campaign '{$campaign->name}' paused successfully!", 'success');
+            $this->dispatch('campaign-paused', ['name' => $campaign->name]);
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to pause campaign: ' . $e->getMessage());
             $this->setMessage('Failed to pause campaign: ' . $e->getMessage(), 'error');
@@ -181,7 +191,9 @@ class CampaignManager extends Component
             $campaignService->stopCampaign($campaign);
 
             $this->setMessage("Campaign '{$campaign->name}' stopped successfully!", 'success');
+            $this->dispatch('campaign-stopped', ['name' => $campaign->name]);
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to stop campaign: ' . $e->getMessage());
             $this->setMessage('Failed to stop campaign: ' . $e->getMessage(), 'error');
@@ -216,6 +228,7 @@ class CampaignManager extends Component
 
             $this->setMessage("Campaign '{$campaign->name}' restarted successfully!", 'success');
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to restart campaign: ' . $e->getMessage());
             $this->setMessage('Failed to restart campaign: ' . $e->getMessage(), 'error');
@@ -282,6 +295,7 @@ class CampaignManager extends Component
             $this->setMessage("Campaign '{$this->editingCampaign->name}' updated successfully!", 'success');
             $this->hideEditForm();
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to update campaign: ' . $e->getMessage());
             $this->setMessage('Failed to update campaign: ' . $e->getMessage(), 'error');
@@ -308,6 +322,7 @@ class CampaignManager extends Component
 
             $this->setMessage("Campaign '{$originalCampaign->name}' cloned successfully as '{$clonedCampaign->name}'!", 'success');
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to clone campaign: ' . $e->getMessage());
             $this->setMessage('Failed to clone campaign: ' . $e->getMessage(), 'error');
@@ -331,7 +346,9 @@ class CampaignManager extends Component
             $campaign->delete();
 
             $this->setMessage("Campaign '{$campaignName}' deleted successfully!", 'success');
+            $this->dispatch('campaign-deleted', ['name' => $campaignName]);
             $this->loadCampaigns();
+            $this->calculateOverallStats();
         } catch (\Exception $e) {
             Log::error('Failed to delete campaign: ' . $e->getMessage());
             $this->setMessage('Failed to delete campaign.', 'error');
@@ -357,15 +374,79 @@ class CampaignManager extends Component
 
     private function setMessage($message, $type = 'info')
     {
+        // Send notification via Notyf using the new simplified system
+        $this->dispatch('notify', $type, $message);
+        
+        // Also set local message as fallback
         $this->message = $message;
         $this->messageType_alert = $type;
+    }
 
-        // Auto-clear message after 5 seconds
-        $this->dispatch('message-shown');
+    public function calculateOverallStats()
+    {
+        try {
+            $campaigns = Campaign::all();
+            
+            $totalRecipients = $campaigns->sum('total_recipients');
+            $totalSent = $campaigns->sum('sent_count');
+            $totalDelivered = $campaigns->sum('delivered_count');
+            $totalRead = $campaigns->sum('read_count');
+            $totalReplies = $campaigns->sum('reply_count');
+            $totalFailed = $campaigns->sum('failed_count');
+            
+            // Calculate average rates
+            $campaignsWithSent = $campaigns->where('sent_count', '>', 0);
+            $avgSuccessRate = $campaignsWithSent->count() > 0 
+                ? round($campaignsWithSent->avg('success_rate'), 1) 
+                : 0;
+            
+            $campaignsWithDelivered = $campaigns->where('delivered_count', '>', 0);
+            $avgReadRate = $campaignsWithDelivered->count() > 0 
+                ? round($campaignsWithDelivered->avg('read_rate'), 1) 
+                : 0;
+            
+            $avgReplyRate = $campaignsWithDelivered->count() > 0 
+                ? round($campaignsWithDelivered->avg('reply_rate'), 1) 
+                : 0;
+            
+            $activeCampaigns = $campaigns->whereIn('status', [
+                Campaign::STATUS_RUNNING, 
+                Campaign::STATUS_SCHEDULED
+            ])->count();
+
+            $this->overallStats = [
+                'total_recipients' => $totalRecipients,
+                'total_sent' => $totalSent,
+                'total_delivered' => $totalDelivered,
+                'total_read' => $totalRead,
+                'total_replies' => $totalReplies,
+                'total_failed' => $totalFailed,
+                'avg_success_rate' => $avgSuccessRate,
+                'avg_read_rate' => $avgReadRate,
+                'avg_reply_rate' => $avgReplyRate,
+                'active_campaigns' => $activeCampaigns
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to calculate overall stats: ' . $e->getMessage());
+            $this->overallStats = [
+                'total_recipients' => 0,
+                'total_sent' => 0,
+                'total_delivered' => 0,
+                'total_read' => 0,
+                'total_replies' => 0,
+                'total_failed' => 0,
+                'avg_success_rate' => 0,
+                'avg_read_rate' => 0,
+                'avg_reply_rate' => 0,
+                'active_campaigns' => 0
+            ];
+        }
     }
 
     public function render()
     {
-        return view('livewire.campaign-manager');
+        return view('livewire.campaign-manager', [
+            'overallStats' => $this->overallStats
+        ]);
     }
 }

@@ -642,3 +642,187 @@
   content: '✓';
   @apply absolute inset-0 flex items-center justify-center text-white text-xs font-bold;
 }
+/* ===== NOTYF CUSTOM STYLES ===== */
+
+/* Custom Notyf positioning and styling */
+/* .notyf {
+    z-index: 9999 !important;
+} */
+
+.notyf__toast {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notyf__toast--success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.notyf__toast--error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+}
+
+.notyf__toast--warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+}
+
+.notyf__toast--info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+}
+
+.notyf__message {
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.notyf__icon {
+    font-size: 18px !important;
+    margin-right: 12px !important;
+}
+
+.notyf__dismiss-btn {
+    opacity: 0.8 !important;
+    transition: opacity 0.2s ease !important;
+}
+
+.notyf__dismiss-btn:hover {
+    opacity: 1 !important;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .notyf__toast {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notyf {
+        padding: 15px !important;
+    }
+    
+    .notyf__toast {
+        margin-bottom: 10px !important;
+        border-radius: 8px !important;
+    }
+    
+    .notyf__message {
+        font-size: 13px !important;
+    }
+}
+
+/* Custom notification types */
+.notyf__toast--campaign {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+}
+
+.notyf__toast--progress {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+}
+
+.notyf__toast--bulk {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+}
+/* ===== BULK ACTIONS ENHANCEMENTS ===== */
+
+/* Bulk actions container */
+.bulk-actions {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Bulk action buttons */
+.bulk-btn {
+    @apply px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95;
+    position: relative;
+    overflow: hidden;
+}
+
+.bulk-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    transform: none !important;
+}
+
+.bulk-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.bulk-btn:hover::before {
+    left: 100%;
+}
+
+/* Custom checkbox styles */
+.custom-checkbox {
+    @apply relative w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 transition-all duration-300 cursor-pointer;
+    appearance: none;
+}
+
+.custom-checkbox:checked {
+    @apply bg-blue-500 border-blue-500;
+}
+
+.custom-checkbox:checked::after {
+    content: '✓';
+    @apply absolute inset-0 flex items-center justify-center text-white text-xs font-bold;
+}
+
+.custom-checkbox:hover {
+    @apply border-blue-400 shadow-md;
+}
+
+/* Selection counter animation */
+#selected-count {
+    animation: countUp 0.3s ease-out;
+}
+
+@keyframes countUp {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Loading state for bulk actions */
+.bulk-btn.loading {
+    @apply pointer-events-none;
+}
+
+.bulk-btn.loading::after {
+    content: '';
+    @apply absolute inset-0 bg-black bg-opacity-20;
+}
+
+.bulk-btn.loading .fas {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
