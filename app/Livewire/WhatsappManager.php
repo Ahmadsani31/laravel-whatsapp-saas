@@ -22,40 +22,40 @@ class WhatsappManager extends Component
     public function checkNumber()
     {
         $this->validate(['number' => 'required|string']);
-        
+
         $this->loading = true;
         $this->checkResult = null;
-        
+
         try {
             $service = new WhatsAppService();
             $response = $service->checkNumber($this->number);
-            
+
             // Ensure response is array
             if (!is_array($response)) {
                 $response = ['error' => 'Invalid response from server'];
             }
-            
+
             $this->checkResult = $response;
             Log::info('Number checked', ['number' => $this->number, 'result' => $response]);
         } catch (\Exception $e) {
             Log::error('Error checking number: ' . $e->getMessage());
             $this->checkResult = ['error' => 'Error checking number: ' . $e->getMessage()];
         }
-        
+
         $this->loading = false;
     }
 
     public function checkBulkNumbers()
     {
         $this->validate(['numbers' => 'required|string']);
-        
+
         $this->bulkLoading = true;
         $this->bulkCheckResults = [];
-        
+
         try {
             // Parse numbers from textarea
             $numbersList = $this->parseNumbers($this->numbers);
-            
+
             if (empty($numbersList)) {
                 $this->bulkCheckResults = [['error' => 'No valid numbers found']];
                 $this->bulkLoading = false;
@@ -64,18 +64,18 @@ class WhatsappManager extends Component
 
             $service = new WhatsAppService();
             $results = [];
-            
+
             foreach ($numbersList as $index => $number) {
                 try {
                     Log::info("Checking number " . ($index + 1) . "/" . count($numbersList) . ": {$number}");
-                    
+
                     $response = $service->checkNumber($number);
-                    
+
                     // Ensure response is array
                     if (!is_array($response)) {
                         $response = ['error' => 'Invalid response from server'];
                     }
-                    
+
                     $results[] = [
                         'number' => $number,
                         'exists' => $response['exists'] ?? false,
@@ -83,12 +83,12 @@ class WhatsappManager extends Component
                         'status' => ($response['exists'] ?? false) ? 'valid' : 'invalid',
                         'checked_at' => now()->format('H:i:s')
                     ];
-                    
+
                     Log::info('Bulk number checked', ['number' => $number, 'result' => $response]);
-                    
+
                     // Small delay to avoid rate limiting
                     usleep(500000); // 0.5 seconds
-                    
+
                 } catch (\Exception $e) {
                     Log::error("Error checking number {$number}: " . $e->getMessage());
                     $results[] = [
@@ -100,20 +100,19 @@ class WhatsappManager extends Component
                     ];
                 }
             }
-            
+
             $this->bulkCheckResults = $results;
-            
+
             Log::info('Bulk check completed', [
                 'total_numbers' => count($numbersList),
                 'valid_numbers' => count(array_filter($results, fn($r) => $r['exists'])),
                 'invalid_numbers' => count(array_filter($results, fn($r) => !$r['exists']))
             ]);
-            
         } catch (\Exception $e) {
             Log::error('Error in bulk check: ' . $e->getMessage());
             $this->bulkCheckResults = [['error' => 'Error in bulk check: ' . $e->getMessage()]];
         }
-        
+
         $this->bulkLoading = false;
     }
 
@@ -121,7 +120,7 @@ class WhatsappManager extends Component
     {
         // Split by new lines, commas, or semicolons
         $numbers = preg_split('/[\r\n,;]+/', trim($numbersText));
-        
+
         // Clean and filter numbers
         $cleanNumbers = [];
         foreach ($numbers as $number) {
@@ -134,7 +133,7 @@ class WhatsappManager extends Component
                 }
             }
         }
-        
+
         // Remove duplicates
         return array_unique($cleanNumbers);
     }
@@ -172,7 +171,7 @@ class WhatsappManager extends Component
         }
 
         $filename = 'whatsapp_check_results_' . now()->format('Y-m-d_H-i-s') . '.csv';
-        
+
         return response()->streamDownload(function () use ($csv) {
             echo $csv;
         }, $filename, [
@@ -183,23 +182,40 @@ class WhatsappManager extends Component
 
     public function sendMessage()
     {
-        $this->validate([
-            'number' => 'required|string|min:10',
-            'message' => 'required|string|min:1'
-        ]);
-        
+        if ($this->checkMode == 'single') {
+            $this->validate([
+                'number' => 'required|string|min:10',
+                'message' => 'required|string|min:1'
+            ]);
+            $dataNumber = $this->number;
+        } else {
+            $this->validate([
+                'numbers' => 'required|string|min:10',
+                'message' => 'required|string|min:1'
+            ]);
+            $dataNumber = $this->numbers;
+        }
+
         $this->loading = true;
         $this->sendResult = null;
-        
+
         try {
             $service = new WhatsAppService();
-            $response = $service->sendMessage($this->number, $this->message);
-            
+            if ($this->checkMode == 'single') {
+                $response = $service->sendMessage($dataNumber, $this->message);
+            } else {
+                $numbersList = $this->parseNumbers($dataNumber);
+                foreach ($numbersList as $number) {
+                    $response = $service->sendMessage($number, $this->message);
+                    usleep(500000); // 0.5 seconds
+                }
+            }
+
             // Ensure response is array
             if (!is_array($response)) {
                 $response = ['success' => false, 'error' => 'Invalid response from server'];
             }
-            
+
             if ($response['success'] ?? false) {
                 $this->sendResult = ['success' => true, 'message' => 'Message sent successfully'];
                 $this->message = '';
@@ -212,7 +228,7 @@ class WhatsappManager extends Component
             Log::error('Error sending message: ' . $e->getMessage());
             $this->sendResult = ['success' => false, 'error' => 'Error sending message: ' . $e->getMessage()];
         }
-        
+
         $this->loading = false;
     }
 
