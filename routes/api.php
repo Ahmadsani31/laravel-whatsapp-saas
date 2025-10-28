@@ -30,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
                 'message' => 'required|string|min:1',
             ]);
 
+            // dd($request->number, $request->message);
+
             return response()->json($service->sendMessage($request->number, $request->message));
         });
 
